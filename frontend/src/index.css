@@ -6,8 +6,9 @@
 
 body {
   font-family: 'Segoe UI', Roboto, sans-serif;
-  background: #f0f2f5;
-  color: #333;
+  background: #f0f4f8;
+  color: #1e293b;
+  font-size: 15px;
 }
 
 #root {
