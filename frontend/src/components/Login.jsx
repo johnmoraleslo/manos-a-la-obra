@@ -5,6 +5,9 @@ const ESPECIALIDADES = [
     'Carpintero', 'Soldador', 'Techador', 'Otro'
 ]
 
+// Definimos la URL de la API (Usa Vercel en producción o localhost en tu PC)
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 function Login({ onLogin }) {
     const [modo, setModo] = useState('login')
     const [nombre, setNombre] = useState('')
@@ -19,12 +22,10 @@ function Login({ onLogin }) {
         e.preventDefault()
         setMensaje(null)
 
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
+        // ✅ URL corregida usando API_URL
         const url = modo === 'login'
             ? `${API_URL}/api/users/login`
             : `${API_URL}/api/users/registro`
-
 
         const body = modo === 'login'
             ? { email, password }
@@ -118,7 +119,6 @@ function Login({ onLogin }) {
                                 </select>
                             </div>
 
-                            {/* Solo se muestra si es trabajador */}
                             {rol === 'trabajador' && (
                                 <div className="form-group">
                                     <label>Mi especialidad</label>
@@ -154,3 +154,4 @@ function Login({ onLogin }) {
 }
 
 export default Login
+

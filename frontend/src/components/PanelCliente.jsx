@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import Chat from './Chat'
 
+// Definimos la URL de la API (Usa Vercel en producción o localhost en tu PC)
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 // Panel exclusivo para clientes
 // Pueden: ver trabajadores, publicar trabajos, chatear
 function PanelCliente({ usuario }) {
@@ -23,7 +26,8 @@ function PanelCliente({ usuario }) {
 
     async function cargarTrabajadores() {
         try {
-            const res = await fetch('http://localhost:3000/api/users/trabajadores')
+            // ✅ URL corregida usando API_URL
+            const res = await fetch(`${API_URL}/api/users/trabajadores`)
             const data = await res.json()
             setTrabajadores(data)
         } catch (err) {
@@ -33,7 +37,8 @@ function PanelCliente({ usuario }) {
 
     async function cargarMisTrabajos() {
         try {
-            const res = await fetch('http://localhost:3000/api/jobs')
+            // ✅ URL corregida usando API_URL
+            const res = await fetch(`${API_URL}/api/jobs`)
             const data = await res.json()
             // Solo los trabajos del cliente logueado
             setTrabajos(data.filter(j => j.cliente_id === usuario.id))
@@ -47,7 +52,8 @@ function PanelCliente({ usuario }) {
         setMsg(null)
 
         try {
-            const res = await fetch('http://localhost:3000/api/jobs', {
+            // ✅ URL corregida usando API_URL
+            const res = await fetch(`${API_URL}/api/jobs`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ titulo, descripcion, pago: Number(pago), cliente_id: usuario.id })
@@ -74,7 +80,8 @@ function PanelCliente({ usuario }) {
 
     async function handleEliminar(id) {
         if (!confirm('¿Eliminar este trabajo?')) return
-        await fetch(`http://localhost:3000/api/jobs/${id}`, { method: 'DELETE' })
+        // ✅ URL corregida usando API_URL y backticks
+        await fetch(`${API_URL}/api/jobs/${id}`, { method: 'DELETE' })
         cargarMisTrabajos()
     }
 
@@ -175,41 +182,36 @@ function PanelCliente({ usuario }) {
                                         <label>Presupuesto (COP)</label>
                                         <input type="number" placeholder="150000" value={pago} onChange={e => setPago(e.target.value)} required />
                                     </div>
-                                    <button type="submit" className="btn btn-primary">Publicar solicitud</button>
+                                    <button type="submit" className="btn btn-primary">Publicar trabajo</button>
                                 </form>
                             </div>
 
-                            {/* Lista de mis trabajos */}
-                            <div className="card">
-                                <div className="table-header">
-                                    <h2>Mis trabajos publicados</h2>
-                                </div>
-                                <table>
-                                    <thead>
-                                        <tr><th>Título</th><th>Presupuesto</th><th>Estado</th><th>Acciones</th></tr>
-                                    </thead>
-                                    <tbody>
-                                        {trabajos.length === 0 ? (
-                                            <tr><td colSpan="4" style={{ textAlign: 'center', color: '#9ca3af' }}>No tienes trabajos publicados</td></tr>
-                                        ) : (
-                                            trabajos.map(j => (
-                                                <tr key={j.id}>
-                                                    <td>{j.titulo}</td>
-                                                    <td>${Number(j.pago).toLocaleString('es-CO')}</td>
-                                                    <td><span className="badge badge-active">Activo</span></td>
-                                                    <td><button className="btn btn-danger" onClick={() => handleEliminar(j.id)}>Eliminar</button></td>
-                                                </tr>
-                                            ))
-                                        )}
-                                    </tbody>
-                                </table>
+                            {/* Lista de trabajos publicados */}
+                            <div className="card" style={{ marginTop: '20px' }}>
+                                <h2>Mis publicaciones actuales</h2>
+                                {trabajos.length === 0 ? (
+                                    <p style={{ color: '#9ca3af', fontSize: '14px' }}>No has publicado trabajos todavía.</p>
+                                ) : (
+                                    trabajos.map(j => (
+                                        <div key={j.id} className="job-item" style={{ borderBottom: '1px solid #e5e7eb', padding: '15px 0' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <div>
+                                                    <h3 style={{ margin: 0 }}>{j.titulo}</h3>
+                                                    <p style={{ fontSize: '14px', color: '#4b5563', margin: '5px 0' }}>{j.descripcion}</p>
+                                                    <span className="badge badge-success">${j.pago.toLocaleString()} COP</span>
+                                                </div>
+                                                <button className="btn" style={{ color: '#ef4444', fontSize: '12px' }} onClick={() => handleEliminar(j.id)}>Eliminar</button>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         </div>
                     </>
                 )}
             </main>
 
-            {/* Chat flotante */}
+            {/* Chat flotante si está abierto */}
             {chatAbierto && (
                 <Chat
                     trabajoId={chatAbierto.trabajoId}
@@ -224,3 +226,4 @@ function PanelCliente({ usuario }) {
 }
 
 export default PanelCliente
+

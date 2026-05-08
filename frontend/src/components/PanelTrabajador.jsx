@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import Chat from './Chat'
 
+// Definimos la URL de la API (Usa Vercel en producción o localhost en tu PC)
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 // Panel exclusivo para trabajadores
 // Pueden: ver trabajos disponibles, postularse, chatear con clientes
 function PanelTrabajador({ usuario }) {
@@ -19,7 +22,8 @@ function PanelTrabajador({ usuario }) {
 
     async function cargarTrabajos() {
         try {
-            const res = await fetch('http://localhost:3000/api/jobs')
+            // ✅ URL corregida usando API_URL
+            const res = await fetch(`${API_URL}/api/jobs`)
             const data = await res.json()
             setTrabajos(data)
         } catch (err) {
@@ -29,7 +33,8 @@ function PanelTrabajador({ usuario }) {
 
     async function cargarMisPostulaciones() {
         try {
-            const res = await fetch(`http://localhost:3000/api/postulaciones/${usuario.id}`)
+            // ✅ URL corregida usando API_URL y backticks
+            const res = await fetch(`${API_URL}/api/postulaciones/${usuario.id}`)
             const data = await res.json()
             setMisPostulaciones(data)
         } catch (err) {
@@ -43,7 +48,8 @@ function PanelTrabajador({ usuario }) {
         if (!mensajeTexto) return
 
         try {
-            const res = await fetch('http://localhost:3000/api/postulaciones', {
+            // ✅ URL corregida usando API_URL
+            const res = await fetch(`${API_URL}/api/postulaciones`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -180,7 +186,6 @@ function PanelTrabajador({ usuario }) {
                 )}
             </main>
 
-            {/* Chat flotante */}
             {chatAbierto && (
                 <Chat
                     trabajoId={chatAbierto.trabajoId}
@@ -195,3 +200,4 @@ function PanelTrabajador({ usuario }) {
 }
 
 export default PanelTrabajador
+

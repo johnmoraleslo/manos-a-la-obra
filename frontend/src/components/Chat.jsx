@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 
+// Definimos la URL de la API (Usa Vercel en producción o localhost en tu PC)
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 // Chat simple entre cliente y trabajador sobre un trabajo específico
 function Chat({ trabajoId, remitenteId, destinatarioId, nombreOtro, onCerrar }) {
     const [mensajes, setMensajes] = useState([])
@@ -20,7 +23,8 @@ function Chat({ trabajoId, remitenteId, destinatarioId, nombreOtro, onCerrar }) 
 
     async function cargarMensajes() {
         try {
-            const res = await fetch(`http://localhost:3000/api/mensajes/${trabajoId}`)
+            // ✅ URL corregida usando API_URL y comillas invertidas
+            const res = await fetch(`${API_URL}/api/mensajes/${trabajoId}`)
             const data = await res.json()
             setMensajes(data)
         } catch (err) {
@@ -33,7 +37,8 @@ function Chat({ trabajoId, remitenteId, destinatarioId, nombreOtro, onCerrar }) 
         if (!texto.trim()) return
 
         try {
-            await fetch('http://localhost:3000/api/mensajes', {
+            // ✅ URL corregida usando API_URL
+            await fetch(`${API_URL}/api/mensajes`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -95,3 +100,4 @@ function Chat({ trabajoId, remitenteId, destinatarioId, nombreOtro, onCerrar }) 
 }
 
 export default Chat
+
