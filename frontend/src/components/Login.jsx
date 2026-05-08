@@ -19,9 +19,12 @@ function Login({ onLogin }) {
         e.preventDefault()
         setMensaje(null)
 
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
         const url = modo === 'login'
-            ? 'http://localhost:3000/api/users/login'
-            : 'http://localhost:3000/api/users/registro'
+            ? `${API_URL}/api/users/login`
+            : `${API_URL}/api/users/registro`
+
 
         const body = modo === 'login'
             ? { email, password }
