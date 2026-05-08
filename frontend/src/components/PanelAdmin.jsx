@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 
+// Definimos la URL de la API (Usa Vercel en producción o localhost en tu PC)
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 function PanelAdmin({ usuario }) {
@@ -17,6 +18,7 @@ function PanelAdmin({ usuario }) {
         cargarStats()
     }, [])
 
+    // Función auxiliar para hacer fetch con el token de admin
     async function apiFetch(url, opciones = {}) {
         const token = localStorage.getItem('token')
         return fetch(url, {
@@ -34,15 +36,9 @@ function PanelAdmin({ usuario }) {
         try {
             const res = await apiFetch(`${API_URL}/api/admin/stats`)
             const data = await res.json()
-            if (!res.ok) {
-                setTipo('error')
-                setMsg(data.error)
-                return
-            }
-            setStats(data)
+            if (res.ok) setStats(data)
         } catch (err) {
-            setTipo('error')
-            setMsg('No se pudo conectar con el servidor')
+            console.error(err)
         } finally {
             setCargando(false)
         }
@@ -53,15 +49,9 @@ function PanelAdmin({ usuario }) {
         try {
             const res = await apiFetch(`${API_URL}/api/admin/users`)
             const data = await res.json()
-            if (!res.ok) {
-                setTipo('error')
-                setMsg(data.error)
-                return
-            }
-            setUsuarios(data)
+            if (res.ok) setUsuarios(data)
         } catch (err) {
-            setTipo('error')
-            setMsg('No se pudo conectar con el servidor')
+            console.error(err)
         } finally {
             setCargando(false)
         }
@@ -72,15 +62,9 @@ function PanelAdmin({ usuario }) {
         try {
             const res = await apiFetch(`${API_URL}/api/admin/jobs`)
             const data = await res.json()
-            if (!res.ok) {
-                setTipo('error')
-                setMsg(data.error)
-                return
-            }
-            setTrabajos(data)
+            if (res.ok) setTrabajos(data)
         } catch (err) {
-            setTipo('error')
-            setMsg('No se pudo conectar con el servidor')
+            console.error(err)
         } finally {
             setCargando(false)
         }
@@ -91,15 +75,9 @@ function PanelAdmin({ usuario }) {
         try {
             const res = await apiFetch(`${API_URL}/api/admin/postulaciones`)
             const data = await res.json()
-            if (!res.ok) {
-                setTipo('error')
-                setMsg(data.error)
-                return
-            }
-            setPostulaciones(data)
+            if (res.ok) setPostulaciones(data)
         } catch (err) {
-            setTipo('error')
-            setMsg('No se pudo conectar con el servidor')
+            console.error(err)
         } finally {
             setCargando(false)
         }
@@ -115,16 +93,43 @@ function PanelAdmin({ usuario }) {
     }
 
     async function handleEliminarUsuario(id) {
-        if (!confirm('¿Estás seguro de que quieres eliminar este usuario?')) return
+        if (!confirm('¿Eliminar este usuario?')) return
         try {
             const res = await apiFetch(`${API_URL}/api/admin/users/${id}`, { method: 'DELETE' })
             if (res.ok) {
                 setTipo('success')
-                setMsg('Usuario eliminado correctamente')
+                setMsg('Usuario eliminado')
                 cargarUsuarios()
             }
         } catch (err) {
-            setTipo('error')
+            setMsg('Error al conectar')
+        }
+    }
+
+    async function handleEliminarTrabajo(id) {
+        if (!confirm('¿Eliminar este trabajo?')) return
+        try {
+            const res = await apiFetch(`${API_URL}/api/admin/jobs/${id}`, { method: 'DELETE' })
+            if (res.ok) {
+                setTipo('success')
+                setMsg('Trabajo eliminado')
+                cargarTrabajos()
+            }
+        } catch (err) {
+            setMsg('Error al conectar')
+        }
+    }
+
+    async function handleEliminarPostulacion(id) {
+        if (!confirm('¿Eliminar esta postulación?')) return
+        try {
+            const res = await apiFetch(`${API_URL}/api/admin/postulaciones/${id}`, { method: 'DELETE' })
+            if (res.ok) {
+                setTipo('success')
+                setMsg('Postulación eliminada')
+                cargarPostulaciones()
+            }
+        } catch (err) {
             setMsg('Error al conectar')
         }
     }
@@ -140,7 +145,7 @@ function PanelAdmin({ usuario }) {
                 <div className="sidebar-logo">
                     <h2>🏗️ Manos a la Obra</h2>
                     <p>⚙️ {usuario.nombre}</p>
-                    <p style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px' }}>Administrador</p>
+                    <p style={{ fontSize: '11px', color: '#6b7280' }}>Administrador</p>
                 </div>
                 <nav>
                     <button className={seccion === 'dashboard' ? 'active' : ''} onClick={() => cambiarSeccion('dashboard')}>📊 Dashboard</button>
@@ -160,14 +165,17 @@ function PanelAdmin({ usuario }) {
 
                 {cargando && <p>Cargando datos...</p>}
 
+                {/* DASHBOARD */}
                 {seccion === 'dashboard' && stats && (
                     <div className="stats">
                         <div className="stat-card"><span>Clientes</span><h3>{stats.clientes}</h3></div>
                         <div className="stat-card"><span>Trabajadores</span><h3>{stats.trabajadores}</h3></div>
                         <div className="stat-card"><span>Total Trabajos</span><h3>{stats.totalJobs}</h3></div>
+                        <div className="stat-card"><span>Postulaciones</span><h3>{stats.totalPostulaciones}</h3></div>
                     </div>
                 )}
 
+                {/* USUARIOS */}
                 {seccion === 'usuarios' && (
                     <div className="card">
                         <input type="text" placeholder="Buscar..." value={busqueda} onChange={e => setBusqueda(e.target.value)} className="form-group" style={{ marginBottom: '15px' }} />
@@ -178,7 +186,44 @@ function PanelAdmin({ usuario }) {
                                     <tr key={u.id}>
                                         <td>{u.nombre}</td>
                                         <td><span className="badge">{u.rol}</span></td>
-                                        <td><button onClick={() => handleEliminarUsuario(u.id)} className="btn" style={{ color: 'red' }}>Eliminar</button></td>
+                                        <td><button onClick={() => handleEliminarUsuario(u.id)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}>Eliminar</button></td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+
+                {/* TRABAJOS */}
+                {seccion === 'trabajos' && (
+                    <div className="card">
+                        <table>
+                            <thead><tr><th>Título</th><th>Pago</th><th>Cliente</th><th>Acción</th></tr></thead>
+                            <tbody>
+                                {trabajos.map(j => (
+                                    <tr key={j.id}>
+                                        <td>{j.titulo}</td>
+                                        <td>${j.pago?.toLocaleString()}</td>
+                                        <td>{j.users?.nombre || '—'}</td>
+                                        <td><button onClick={() => handleEliminarTrabajo(j.id)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}>Eliminar</button></td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+
+                {/* POSTULACIONES */}
+                {seccion === 'postulaciones' && (
+                    <div className="card">
+                        <table>
+                            <thead><tr><th>Trabajo</th><th>Candidato</th><th>Acción</th></tr></thead>
+                            <tbody>
+                                {postulaciones.map(p => (
+                                    <tr key={p.id}>
+                                        <td>{p.jobs?.titulo}</td>
+                                        <td>{p.users?.nombre}</td>
+                                        <td><button onClick={() => handleEliminarPostulacion(p.id)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}>Eliminar</button></td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -191,4 +236,5 @@ function PanelAdmin({ usuario }) {
 }
 
 export default PanelAdmin
+
 
